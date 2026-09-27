@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Swarn — All India Public Safety & Personal Emergency SOS Suite</title>
+  <style>
+    :root {
+      --bg-dark: #050811;
+      --card-bg: #0f172a;
+      --card-border: #1e293b;
+      --accent-gold: #f59e0b;
+      --danger-red: #ef4444;
+      --safety-green: #10b981;
+      --info-blue: #3b82f6;
+      --purple-accent: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    
+    body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 14px; padding-bottom: 60px; transition: background 0.3s; }
+
+    /* Flashing Screen Animation for Police Siren */
+    body.siren-flashing {
+      animation: strobeAlert 0.35s infinite alternate;
+    }
+    @keyframes strobeAlert {
+      0% { background-color: #991b1b; }
+      100% { background-color: #1e40af; }
+    }
+
+    /* Top Utility Bar */
+    .top-status-bar { display: flex; justify-content: space-between; align-items: center; background: #0f172a; border: 1px solid #1e293b; padding: 8px 12px; border-radius: 12px; margin-bottom: 14px; font-size: 11px; color: var(--text-muted); }
+    .status-pill { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+    .dot-online { width: 8px; height: 8px; background: var(--safety-green); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--safety-green); }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid rgba(245, 158, 11, 0.25); margin-bottom: 16px; }
+    .brand-title { font-size: 26px; font-weight: 900; background: linear-gradient(135deg, #FFE066, #F59E0B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
+    .brand-sub { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px; }
+    .badge { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+
+    /* National SOS Container */
+    .sos-container { background: linear-gradient(135deg, #450a0a 0%, #0f172a 100%); border: 1.5px solid rgba(239, 68, 68, 0.6); border-radius: 20px; padding: 18px; text-align: center; margin-bottom: 16px; box-shadow: 0 8px 30px rgba(239, 68, 68, 0.25); position: relative; overflow: hidden; }
+    .sos-title { font-size: 11px; font-weight: 800; color: #fca5a5; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+    .sos-number { font-size: 34px; font-weight: 900; color: #ffffff; margin-bottom: 12px; letter-spacing: 1px; }
+    .sos-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #dc2626, #991b1b); color: #ffffff; font-weight: 800; font-size: 15px; text-decoration: none; padding: 14px; border-radius: 14px; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.6); border: none; cursor: pointer; width: 100%; }
+
+    /* Panic Countdown Overlay Button */
+    .panic-box { background: rgba(220, 38, 38, 0.15); border: 1px dashed #ef4444; border-radius: 12px; padding: 10px; margin-top: 10px; text-align: center; }
+    .panic-btn { background: #ef4444; color: #fff; font-weight: 900; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; margin-top: 4px; }
+
+    /* Tactical Safety Toolbar (Siren, Whistle, Torch, Fake Call) */
+    .tactical-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .tac-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 10px 6px; text-align: center; cursor: pointer; transition: 0.2s; color: var(--text-main); }
+    .tac-card:active { transform: scale(0.95); }
+    .tac-icon { font-size: 22px; margin-bottom: 4px; }
+    .tac-label { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+
+    /* Siren Section Drawer */
+    .siren-drawer { background: var(--card-bg); border: 1px solid #1e3a8a; border-radius: 16px; padding: 14px; margin-bottom: 16px; display: none; }
+    .siren-select-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+    .siren-type-btn { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; font-size: 11px; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+    .siren-type-btn.active { background: #2563eb; color: #fff; border-color: #3b82f6; }
+
+    /* GPS Location Card */
+    .gps-card { background: var(--card-bg); border: 1px solid #10b981; border-radius: 16px; padding: 14px; margin-bottom: 16px; }
+    .gps-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .gps-title { font-size: 13px; font-weight: 800; color: var(--safety-green); display: flex; align-items: center; gap: 6px; }
+    .gps-coords { font-size: 11px; font-family: monospace; color: #a7f3d0; background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 8px; margin-bottom: 10px; word-break: break-all; }
+    .gps-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .gps-btn { background: #10b981; color: #000; font-weight: 800; font-size: 12px; padding: 10px; border-radius: 10px; border: none; cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .gps-btn-sec { background: #1e293b; color: #fff; border: 1px solid #334155; }
+
+    /* Personal Emergency Contacts */
+    .section-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .section-title { font-size: 15px; font-weight: 800; color: var(--accent-gold); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+    .pc-input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .input-field { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none; width: 100%; }
+    .input-field:focus { border-color: var(--accent-gold); }
+    .btn-gold { background: var(--accent-gold); color: #000; font-weight: 800; font-size: 13px; padding: 10px; border-radius: 10px; border: none; cursor: pointer; text-align: center; }
+    
+    .pc-list { display: flex; flex-direction: column; gap: 8px; }
+    .pc-item { background: #192233; border: 1px solid #2d3748; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
+    .pc-info-name { font-size: 13px; font-weight: 700; color: #fff; }
+    .pc-info-tag { font-size: 9px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+    .pc-info-num { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .pc-actions { display: flex; gap: 6px; align-items: center; }
+    .pc-call-btn { background: #10b981; color: #fff; font-weight: 800; font-size: 11px; text-decoration: none; padding: 6px 12px; border-radius: 8px; }
+    .pc-del-btn { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 11px; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+
+    /* Medical ID Card */
+    .med-card-display { background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 1px solid #6366f1; border-radius: 12px; padding: 12px; font-size: 12px; }
+    .med-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .med-label { color: #93c5fd; font-weight: 600; }
+    .med-val { font-weight: 800; color: #fff; }
+
+    /* Quick Action Finder Grid */
+    .near-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .near-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px; text-decoration: none; color: #fff; text-align: center; font-size: 11px; font-weight: 700; }
+    .near-icon { font-size: 20px; margin-bottom: 4px; }
+
+    /* Category Scroll & Search */
+    .category-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; }
+    .category-scroll::-webkit-scrollbar { display: none; }
+    .cat-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+    .cat-btn.active { background: var(--accent-gold); border-color: var(--accent-gold); color: #000; font-weight: 800; }
+
+    .search-box { width: 100%; background: var(--card-bg); border: 1px solid #334155; border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 13px; margin-bottom: 16px; outline: none; }
+    .search-box:focus { border-color: var(--accent-gold); }
+
+    /* Helpline Cards List */
+    .card-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; }
+    .card-left { display: flex; align-items: center; gap: 12px; }
+    .icon-box { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+    .card-title { font-size: 14px; font-weight: 700; color: #ffffff; }
+    .card-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .call-btn { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 800; font-size: 12px; text-decoration: none; padding: 8px 14px; border-radius: 8px; white-space: nowrap; }
+
+    /* First Aid Guide Section */
+    .guide-card { background: #1e293b; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent-gold); }
+    .guide-card.red { border-left-color: var(--danger-red); }
+    .guide-card.blue { border-left-color: var(--info-blue); }
+    .guide-card.purple { border-left-color: var(--purple-accent); }
+    .guide-title { font-size: 13px; font-weight: 800; color: #ffffff; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .guide-steps { font-size: 11px; color: #cbd5e1; line-height: 1.5; padding-left: 16px; }
+    .guide-steps li { margin-bottom: 4px; }
+
+    /* Fake Call Overlay Screen */
+    .fake-call-overlay { fixed; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; flex-direction: column; justify-content: space-between; padding: 60px 20px; text-align: center; }
+    .fake-call-name { font-size: 28px; font-weight: 800; color: #fff; margin-top: 20px; }
+    .fake-call-sub { font-size: 14px; color: #9ca3af; margin-top: 6px; }
+    .fake-call-actions { display: flex; justify-content: space-around; width: 100%; margin-bottom: 40px; }
+    .fake-btn-ans { width: 70px; height: 70px; border-radius: 50%; background: #10b981; color: #fff; border: none; font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .fake-btn-rej { width: 70px; height: 70px; border-radius: 50%; background: #ef4444; color: #fff; border: none; font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* Footer */
+    .footer { text-align: center; font-size: 11px; color: #64748b; padding-top: 10px; }
+    .footer span { color: var(--accent-gold); font-weight: 800; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Utility Bar -->
+  <div class="top-status-bar">
+    <div class="status-pill"><span class="dot-online" id="networkDot"></span> <span id="networkText">ONLINE</span></div>
+    <div class="status-pill">⚡ Battery: <span id="batteryStatus">--%</span></div>
+    <div class="status-pill">🕒 <span id="liveTime">00:00</span></div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="brand-title">SWARN SOS</div>
+      <div class="brand-sub">National Emergency & Safety Suite</div>
+    </div>
+    <div class="badge">✓ Verified 2026</div>
+  </div>
+
+  <!-- National SOS 112 Call Box -->
+  <div class="sos-container">
+    <div class="sos-title">National Emergency Response System</div>
+    <div class="sos-number">112 HELPLINE</div>
+    <a href="tel:112" class="sos-btn">📞 DIRECT EMERGENCY CALL (112)</a>
+
+    <!-- Panic SOS Button with Countdown -->
+    <div class="panic-box">
+      <div style="font-size:11px; color:#fca5a5; font-weight:700;">Instant Panic Mode (3s Countdown Alert)</div>
+      <button onclick="triggerPanicCountdown()" id="panicBtn" class="panic-btn">🔴 ACTIVATE PANIC ALERT</button>
+    </div>
+  </div>
+
+  <!-- Tactical Safety Toolbar -->
+  <div class="tactical-grid">
+    <div class="tac-card" onclick="toggleSirenDrawer()">
+      <div class="tac-icon">🚨</div>
+      <div class="tac-label">Loud Siren</div>
+    </div>
+    <div class="tac-card" onclick="triggerWhistle()">
+      <div class="tac-icon">🔊</div>
+      <div class="tac-label">Whistle</div>
+    </div>
+    <div class="tac-card" onclick="toggleFlashlight()">
+      <div class="tac-icon">🔦</div>
+      <div class="tac-label">Flashlight</div>
+    </div>
+    <div class="tac-card" onclick="startFakeCall()">
+      <div class="tac-icon">📲</div>
+      <div class="tac-label">Fake Call</div>
+    </div>
+  </div>
+
+  <!-- Loud Siren Drawer -->
+  <div class="siren-drawer" id="sirenDrawer">
+    <div style="font-size:13px; font-weight:800; color:#60a5fa; margin-bottom:8px; text-align:center;">🚨 Select Emergency Siren Sound</div>
+    <div class="siren-select-grid">
+      <button class="siren-type-btn active" onclick="setSirenType('police', this)">Police Siren</button>
+      <button class="siren-type-btn" onclick="setSirenType('ambulance', this)">Ambulance</button>
+      <button class="siren-type-btn" onclick="setSirenType('airhorn', this)">Airhorn</button>
+    </div>
+    <button onclick="toggleSiren()" id="sirenToggleBtn" style="width:100%; background:#2563eb; color:#fff; font-weight:800; padding:10px; border-radius:10px; border:none; cursor:pointer;">START LOUD SIREN</button>
+  </div>
+
+  <!-- Live GPS Tracking Section -->
+  <div class="gps-card">
+    <div class="gps-header">
+      <div class="gps-title">📍 Live GPS Coordinates</div>
+      <button onclick="updateGPS()" style="background:none; border:none; color:#10b981; font-size:11px; font-weight:700; cursor:pointer;">🔄 Refresh</button>
+    </div>
+    <div class="gps-coords" id="gpsDisplay">Fetching live coordinates...</div>
+    <div class="gps-btn-group">
+      <button onclick="shareGPSWhatsApp()" class="gps-btn">💬 Share Location</button>
+      <a href="https://maps.google.com" id="mapsDirectLink" target="_blank" class="gps-btn gps-btn-sec">🗺️ View Map</a>
+    </div>
+  </div>
+
+  <!-- Personal Emergency Contacts Section -->
+  <div class="section-box">
+    <div class="section-title">
+      <span>👨‍👩‍👧‍👦 Personal Emergency Contacts</span>
+      <button onclick="broadcastWhatsAppSOS()" style="background:#dc2626; color:#fff; font-size:10px; padding:4px 8px; border-radius:6px; border:none; font-weight:800; cursor:pointer;">📲 Alert All SOS</button>
+    </div>
+    <div class="pc-input-group">
+      <input type="text" id="contactName" placeholder="Name (e.g. Papa, Doctor)..." class="input-field">
+      <input type="tel" id="contactPhone" placeholder="Mobile Number..." class="input-field">
+      <select id="contactRelation" class="input-field">
+        <option value="Family">Family / Spouse</option>
+        <option value="Parent">Parent</option>
+        <option value="Doctor">Doctor / Hospital</option>
+        <option value="Friend">Friend / Neighbor</option>
+      </select>
+      <button onclick="addPersonalContact()" class="btn-gold">+ Save Emergency Contact</button>
+    </div>
+    <div class="pc-list" id="personalContactsList"></div>
+  </div>
+
+  <!-- Medical ID Section -->
+  <div class="section-box">
+    <div class="section-title">
+      <span>🩺 Medical ID & First Responder Card</span>
+      <button onclick="toggleMedicalIDEdit()" style="background:#334155; color:#fff; font-size:10px; padding:4px 8px; border-radius:6px; border:none; font-weight:700; cursor:pointer;">✏️ Edit</button>
+    </div>
+    <div id="medicalIDDisplay" class="med-card-display"></div>
+    <div id="medicalIDForm" style="display:none; margin-top:10px;">
+      <div class="pc-input-group">
+        <input type="text" id="medName" placeholder="Full Name..." class="input-field">
+        <select id="medBlood" class="input-field">
+          <option value="Unknown">Select Blood Group</option>
+          <option value="A+">A+</option><option value="A-">A-</option>
+          <option value="B+">B+</option><option value="B-">B-</option>
+          <option value="O+">O+</option><option value="O-">O-</option>
+          <option value="AB+">AB+</option><option value="AB-">AB-</option>
+        </select>
+        <input type="text" id="medAllergies" placeholder="Allergies (e.g. Penicillin, Dust)..." class="input-field">
+        <input type="text" id="medConditions" placeholder="Conditions (e.g. Diabetes, Asthma)..." class="input-field">
+        <button onclick="saveMedicalID()" class="btn-gold">Save Medical Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Near Me Instant Finder -->
+  <div class="near-grid">
+    <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" class="near-card">
+      <div class="near-icon">🏥</div>
+      <div>Hospitals</div>
+    </a>
+    <a href="https://www.google.com/maps/search/police+station+near+me" target="_blank" class="near-card">
+      <div class="near-icon">👮</div>
+      <div>Police</div>
+    </a>
+    <a href="https://www.google.com/maps/search/pharmacy+near+me" target="_blank" class="near-card">
+      <div class="near-icon">💊</div>
+      <div>Pharmacy</div>
+    </a>
+    <a href="https://www.google.com/maps/search/blood+bank+near+me" target="_blank" class="near-card">
+      <div class="near-icon">🩸</div>
+      <div>Blood Bank</div>
+    </a>
+    <a href="https://www.google.com/maps/search/fire+station+near+me" target="_blank" class="near-card">
+      <div class="near-icon">🚒</div>
+      <div>Fire Station</div>
+    </a>
+    <a href="https://www.google.com/maps/search/gas+station+near+me" target="_blank" class="near-card">
+      <div class="near-icon">⛽</div>
+      <div>Petrol Pump</div>
+    </a>
+  </div>
+
+  <!-- Category Selection Scroll -->
+  <div class="category-scroll">
+    <button class="cat-btn active" onclick="filterCategory('all', this)">All (30+)</button>
+    <button class="cat-btn" onclick="filterCategory('police', this)">👮 Police & Crime</button>
+    <button class="cat-btn" onclick="filterCategory('medical', this)">🚑 Medical & Poison</button>
+    <button class="cat-btn" onclick="filterCategory('women', this)">👩 Women & Child</button>
+    <button class="cat-btn" onclick="filterCategory('disaster', this)">🚆 Travel & Disaster</button>
+    <button class="cat-btn" onclick="filterCategory('utility', this)">💡 Gas & Utility</button>
+  </div>
+
+  <!-- Search Box -->
+  <input type="text" id="searchInput" oninput="searchHelplines()" placeholder="Search Helpline (e.g. Poison, Cyber, Police, Ambulance)..." class="search-box">
+
+  <!-- Exhaustive Helplines Directory List -->
+  <div class="card-list" id="cardList">
+    <!-- Police 100 -->
+    <div class="card" data-cat="police">
+      <div class="card-left"><div class="icon-box" style="background:rgba(59,130,246
