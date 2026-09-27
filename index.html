@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swarn — All India Emergency SOS Directory</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    
+    body { background-color: #080c14; color: #f3f4f6; min-height: 100vh; padding: 16px; padding-bottom: 50px; transition: background 0.3s; }
+
+    /* Flashing Siren Background Animation */
+    body.siren-active {
+      animation: policeFlash 0.4s infinite alternate;
+    }
+    @keyframes policeFlash {
+      0% { background-color: #7f1d1d; }
+      100% { background-color: #1e3a8a; }
+    }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid rgba(245, 158, 11, 0.25); margin-bottom: 16px; }
+    .brand-title { font-size: 24px; font-weight: 900; background: linear-gradient(135deg, #FFE066, #F59E0B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
+    .brand-sub { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px; }
+    .badge { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+
+    /* SOS & Siren Control Box */
+    .sos-container { background: linear-gradient(135deg, #450a0a 0%, #111827 100%); border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 20px; padding: 18px; text-align: center; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.25); position: relative; overflow: hidden; }
+    .sos-title { font-size: 11px; font-weight: 800; color: #fca5a5; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+    .sos-number { font-size: 34px; font-weight: 900; color: #ffffff; margin-bottom: 12px; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+    
+    .sos-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sos-btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: #dc2626; color: #ffffff; font-weight: 800; font-size: 13px; text-decoration: none; padding: 12px; border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.5); animation: pulseGlow 2s infinite; cursor: pointer; }
+    .siren-btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: #1e40af; color: #ffffff; font-weight: 800; font-size: 13px; padding: 12px; border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(30, 64, 175, 0.5); cursor: pointer; }
+    
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+      70% { box-shadow: 0 0 0 12px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    /* Quick Location & Hospital Grid */
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .action-card { background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 12px; text-decoration: none; color: #fff; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.2s; }
+    .action-card:active { transform: scale(0.97); }
+    .action-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .action-title { font-size: 12px; font-weight: 700; }
+    .action-desc { font-size: 10px; color: #9ca3af; }
+
+    /* Category Filter Tabs */
+    .category-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; scrollbar-width: none; }
+    .category-scroll::-webkit-scrollbar { display: none; }
+    .cat-btn { background: #111827; border: 1px solid #1f2937; color: #9ca3af; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
+    .cat-btn.active { background: #f59e0b; border-color: #f59e0b; color: #000; font-weight: 800; }
+
+    /* Search Box */
+    .search-box { width: 100%; background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 13px; margin-bottom: 16px; outline: none; }
+    .search-box:focus { border-color: #f59e0b; }
+
+    /* Helpline List */
+    .card-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s; }
+    .card:active { transform: scale(0.98); }
+    .card-left { display: flex; align-items: center; gap: 12px; }
+    .icon-box { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .card-title { font-size: 14px; font-weight: 700; color: #ffffff; }
+    .card-sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+    .call-btn { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; font-weight: 800; font-size: 12px; text-decoration: none; padding: 8px 14px; border-radius: 10px; white-space: nowrap; }
+
+    /* Detailed Emergency Guide Section */
+    .guide-section { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 16px; margin-bottom: 24px; }
+    .guide-header { font-size: 16px; font-weight: 800; color: #f59e0b; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .guide-card { background: #192233; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #f59e0b; }
+    .guide-card.red { border-left-color: #ef4444; }
+    .guide-card.blue { border-left-color: #3b82f6; }
+    .guide-card.purple { border-left-color: #a855f7; }
+    .guide-title { font-size: 13px; font-weight: 800; color: #ffffff; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .guide-steps { font-size: 11px; color: #d1d5db; line-height: 1.5; padding-left: 14px; }
+    .guide-steps li { margin-bottom: 3px; }
+
+    /* Footer */
+    .footer { text-align: center; font-size: 11px; color: #6b7280; padding-top: 10px; }
+    .footer span { color: #f59e0b; font-weight: 800; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="brand-title">SWARN</div>
+      <div class="brand-sub">Aapki Suraksha, Ek Tap Door</div>
+    </div>
+    <div class="badge">✓ Verified 2026</div>
+  </div>
+
+  <!-- SOS & Emergency Siren Banner -->
+  <div class="sos-container">
+    <div class="sos-title">National Emergency Response</div>
+    <div class="sos-number">112 HELPLINE</div>
+    <div class="sos-btn-group">
+      <a href="tel:112" class="sos-btn">
+        📞 DIRECT CALL
+      </a>
+      <button onclick="toggleSiren()" id="sirenBtn" class="siren-btn">
+        🚨 LOUD SIREN
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick GPS & Hospital Search -->
+  <div class="action-grid">
+    <div onclick="shareLiveLocation()" class="action-card">
+      <div class="action-icon" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">📍</div>
+      <div>
+        <div class="action-title">Share Live GPS</div>
+        <div class="action-desc">WhatsApp Location</div>
+      </div>
+    </div>
+    <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" class="action-card">
+      <div class="action-icon" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">🏥</div>
+      <div>
+        <div class="action-title">Near Hospital</div>
+        <div class="action-desc">Live Map Search</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Category Selection Tabs -->
+  <div class="category-scroll">
+    <button class="cat-btn active" onclick="filterCategory('all', this)">All (18+)</button>
+    <button class="cat-btn" onclick="filterCategory('police', this)">👮 Police & Crime</button>
+    <button class="cat-btn" onclick="filterCategory('medical', this)">🚑 Medical & Poison</button>
+    <button class="cat-btn" onclick="filterCategory('women', this)">👩 Women & Child</button>
+    <button class="cat-btn" onclick="filterCategory('disaster', this)">🚆 Travel & Disaster</button>
+    <button class="cat-btn" onclick="filterCategory('mental', this)">🧠 Mental Health</button>
+  </div>
+
+  <!-- Search Bar -->
+  <input type="text" id="searchInput" onkeyup="searchHelplines()" placeholder="Search Helpline (e.g. Poison, Cyber, Police, Hospital)..." class="search-box">
+
+  <!-- Helplines Directory List -->
+  <div class="card-list" id="cardList">
+
+    <!-- Police 100 -->
+    <div class="card" data-cat="police">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(59,130,246,0.2); color: #60a5fa;">👮</div>
+        <div>
+          <div class="card-title">Police Emergency</div>
+          <div class="card-sub">Local Police Emergency (100)</div>
+        </div>
+      </div>
+      <a href="tel:100" class="call-btn">Call 100</a>
+    </div>
+
+    <!-- Ambulance 108 -->
+    <div class="card" data-cat="medical">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(239,68,68,0.2); color: #f87171;">🚑</div>
+        <div>
+          <div class="card-title">National Ambulance</div>
+          <div class="card-sub">Medical Emergency (108 / 102)</div>
+        </div>
+      </div>
+      <a href="tel:108" class="call-btn">Call 108</a>
+    </div>
+
+    <!-- AIIMS Poison Helpline 1066 -->
+    <div class="card" data-cat="medical">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(168,85,247,0.2); color: #c084fc;">☣️</div>
+        <div>
+          <div class="card-title">AIIMS Poison Info Centre</div>
+          <div class="card-sub">Poisoning & Snake Bite (1066)</div>
+        </div>
+      </div>
+      <a href="tel:1066" class="call-btn">Call 1066</a>
+    </div>
+
+    <!-- Cyber Crime 1930 -->
+    <div class="card" data-cat="police">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(168,85,247,0.2); color: #c084fc;">💻</div>
+        <div>
+          <div class="card-title">Cyber Crime Fraud</div>
+          <div class="card-sub">Bank Fraud Helpline (1930)</div>
+        </div>
+      </div>
+      <a href="tel:1930" class="call-btn">Call 1930</a>
+    </div>
+
+    <!-- Women Helpline 1091 -->
+    <div class="card" data-cat="women">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(236,72,153,0.2); color: #f472b6;">👩</div>
+        <div>
+          <div class="card-title">Women Safety Helpline</div>
+          <div class="card-sub">Women Protection (1091)</div>
+        </div>
+      </div>
+      <a href="tel:1091" class="call-btn">Call 1091</a>
+    </div>
+
+    <!-- Women Distress 181 -->
+    <div class="card" data-cat="women">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(236,72,153,0.2); color: #f472b6;">🛡️</div>
+        <div>
+          <div class="card-title">Women Distress & Abuse</div>
+          <div class="card-sub">National Women Commission (181)</div>
+        </div>
+      </div>
+      <a href="tel:181" class="call-btn">Call 181</a>
+    </div>
+
+    <!-- Fire Brigade 101 -->
+    <div class="card" data-cat="disaster">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(245,158,11,0.2); color: #fbbf24;">🚒</div>
+        <div>
+          <div class="card-title">Fire Brigade Emergency</div>
+          <div class="card-sub">Fire Emergency Response (101)</div>
+        </div>
+      </div>
+      <a href="tel:101" class="call-btn">Call 101</a>
+    </div>
+
+    <!-- Childline 1098 -->
+    <div class="card" data-cat="women">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(16,185,129,0.2); color: #34d399;">👶</div>
+        <div>
+          <div class="card-title">Childline Protection</div>
+          <div class="card-sub">Child Abuse & Help (1098)</div>
+        </div>
+      </div>
+      <a href="tel:1098" class="call-btn">Call 1098</a>
+    </div>
+
+    <!-- Railway 139 -->
+    <div class="card" data-cat="disaster">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(14,165,233,0.2); color: #38bdf8;">🚆</div>
+        <div>
+          <div class="card-title">Rail Madad Railway</div>
+          <div class="card-sub">Train Emergency & Help (139)</div>
+        </div>
+      </div>
+      <a href="tel:139" class="call-btn">Call 139</a>
+    </div>
+
+    <!-- Highway Accident 1073 -->
+    <div class="card" data-cat="medical">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(239,68,68,0.2); color: #f87171;">🚗</div>
+        <div>
+          <div class="card-title">National Highway Accident</div>
+          <div class="card-sub">Road & Highway SOS (1073)</div>
+        </div>
+      </div>
+      <a href="tel:1073" class="call-btn">Call 1073</a>
+    </div>
+
+    <!-- Disaster NDRF 1078 -->
+    <div class="card" data-cat="disaster">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(234,179,8,0.2); color: #facc15;">🌊</div>
+        <div>
+          <div class="card-title">NDRF Disaster Control</div>
+          <div class="card-sub">Flood, Earthquake, Disaster (1078)</div>
+        </div>
+      </div>
+      <a href="tel:1078" class="call-btn">Call 1078</a>
+    </div>
+
+    <!-- Senior Citizen 14567 -->
+    <div class="card" data-cat="police">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(249,115,22,0.2); color: #fb923c;">👴</div>
+        <div>
+          <div class="card-title">Elderline Senior Citizen</div>
+          <div class="card-sub">Senior Help Helpline (14567)</div>
+        </div>
+      </div>
+      <a href="tel:14567" class="call-btn">Call 14567</a>
+    </div>
+
+    <!-- Tele MANAS Mental Health 14416 -->
+    <div class="card" data-cat="mental">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(20,184,166,0.2); color: #2dd4bf;">🧠</div>
+        <div>
+          <div class="card-title">Tele-MANAS Mental Health</div>
+          <div class="card-sub">24x7 Free Counseling (14416)</div>
+        </div>
+      </div>
+      <a href="tel:14416" class="call-btn">Call 14416</a>
+    </div>
+
+    <!-- Anti Terror 1090 -->
+    <div class="card" data-cat="police">
+      <div class="card-left">
+        <div class="icon-box" style="background: rgba(107,114,128,0.2); color: #9ca3af;">🕵️</div>
+        <div>
+          <div class="card-title">Crime Stopper & Vigilance</div>
+          <div class="card-sub">Anti-Terror / Crime Tip (1090)</div>
+        </div>
+      </div>
+      <a href="tel:1090" class="call-btn">Call 1090</a>
+    </div>
+
+  </div>
+
+  <!-- Detailed Emergency Guide Section -->
+  <div class="guide-section">
+    <div class="guide-header">
+      📚 Emergency Guide & First Aid Instructions
+    </div>
+
+    <!-- Guide 1: Poisoning & Snake Bite -->
+    <div class="guide-card red">
+      <div class="guide-title">
+        <span>☣️ Poisoning / Snake Bite (Zeher ya Saanp Katna)</span>
+        <span style="color:#ef4444;">Call 1066</span>
+      </div>
+      <ol class="guide-steps">
+        <li><strong>Don't Panic:</strong> Saanp katne par mareez ko bilkul hilne-dhulne na dein taaki zeher shareer me na faile.</li>
+        <li><strong>No Sucking/Cutting:</strong> Dakh-wale jagah par kat na lagayein na hi munh se zeher choosne ki koshish karein.</li>
+        <li><strong>Call AIIMS Poison Line:</strong> Immediately <strong>1066</strong> par call karke antidotal advice lein aur sarkari hospital jayein.</li>
+      </ol>
+    </div>
+
+    <!-- Guide 2: Heart Attack & CPR -->
+    <div class="guide-card red">
+      <div class="guide-title">
+        <span>❤️ Heart Attack / CPR Guide</span>
+        <span style="color:#ef4444;">Call 108</span>
+      </div>
+      <ol class="guide-steps">
+        <li><strong>Position:</strong> Mareez ko peeth ke bal sapat zameen par litayein.</li>
+        <li><strong>CPR Push:</strong> Dono hathon ko seene ke beech me rakh kar 100-120 chest compressions per minute ki speed se zor se dabayein.</li>
+        <li><strong>Call Ambulance:</strong> Turant 108 ko call karein.</li>
+      </ol>
+    </div>
+
+    <!-- Guide 3: Cyber Fraud -->
+    <div class="guide-card blue">
+      <div class="guide-title">
+        <span>💳 Cyber Fraud / Bank Money Stolen</span>
+        <span style="color:#60a5fa;">Call 1930</span>
+      </div>
+      <ol class="guide-steps">
+        <li><strong>Golden Hour:</strong> Fraud hone ke 1 ghante ke andar <strong>1930</strong> par call karein.</li>
+        <li><strong>Freeze Bank Account:</strong> Bank customer care ko call karke apna ATM/Netbanking block karein.</li>
+        <li><strong>Report Online:</strong> cybercrime.gov.in par complaint darj karein.</li>
+      </ol>
+    </div>
+
+    <!-- Guide 4: Fire Emergency -->
+    <div class="guide-card purple">
+      <div class="guide-title">
+        <span>🔥 Fire Safety & Burns</span>
+        <span style="color:#c084fc;">Call 101</span>
+      </div>
+      <ol class="guide-steps">
+        <li><strong>Stop, Drop & Roll:</strong> Agar kapdon me aag lage toh bhagein nahi, zameen par roll karein.</li>
+        <li><strong>Burns:</strong> Jalne wali jagah par 10-15 minute tak saaf paani dalein (Baraf na lagayein).</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Swarn Public Safety Network<br>Designed & Developed with ❤️ by <span>Swarn</span>
+  </div>
+
+  <!-- JavaScript Code for Siren, Filter, Search & Location -->
+  <script>
+    // Web Audio API Loud Police Siren Generator
+    let audioCtx = null;
+    let osc = null;
+    let gainNode = null;
+    let isSirenActive = false;
+    let sirenTimer = null;
+
+    function toggleSiren() {
+      const btn = document.getElementById('sirenBtn');
+      
+      if (!isSirenActive) {
+        // Start Siren
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          osc = audioCtx.createOscillator();
+          gainNode = audioCtx.createGain();
+          
+          osc.type = 'sawtooth';
+          osc.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          
+          osc.start();
+          
+          let isHigh = false;
+          sirenTimer = setInterval(() => {
+            if (osc && audioCtx) {
+              osc.frequency.setValueAtTime(isHigh ? 950 : 500, audioCtx.currentTime);
+              isHigh = !isHigh;
+            }
+          }, 300);
+
+          isSirenActive = true;
+          document.body.classList.add('siren-active');
+          btn.innerText = "🛑 STOP SIREN";
+          btn.style.background = "#dc2626";
+        } catch (e) {
+          alert("Audio Siren error. Please tap screen again.");
+        }
+      } else {
+        // Stop Siren
+        if (sirenTimer) clearInterval(sirenTimer);
+        if (osc) {
+          try { osc.stop(); } catch(e){}
+        }
+        if (audioCtx) {
+          try { audioCtx.close(); } catch(e){}
+        }
+        isSirenActive = false;
+        document.body.classList.remove('siren-active');
+        btn.innerText = "🚨 LOUD SIREN";
+        btn.style.background = "#1e40af";
+      }
+    }
+
+    // Category Filter
+    function filterCategory(cat, btn) {
+      // Update active button UI
+      const buttons = document.querySelectorAll('.cat-btn');
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Filter cards
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        if (cat === 'all' || card.getAttribute('data-cat') === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Search Box Filter
+    function searchHelplines() {
+     
